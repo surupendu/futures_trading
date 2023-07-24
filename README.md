@@ -1,4 +1,4 @@
-# How Does News Data Impacts Trading Decisions?
+### How Does News Data Impacts Trading Decisions?
 
 ##### Repository Details:
 This repository has the RL framework for performing futures trading in stock market.
