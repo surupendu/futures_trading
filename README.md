@@ -1,25 +1,22 @@
-### How Does News Data Impacts Trading Decisions?
+### Playing with News Context for Algorithmic Trading
 
 ##### Repository Details:
 This repository has the RL framework for performing futures trading in stock market.
 The trading environment currently supports trading in near month contracts.
-Discrete action space is supported for Q learning, SARSA and DQN. Continous action space is supported for PPO.
-Continuous observation space is supported for DQN and PPO. Discrete obeservation space is supported for Q learning and SARSA.
+Discrete action space is supported for DQN. Continous action space is supported for PPO.
+Continuous observation space is supported for DQN and PPO.
 
-1. deep_rl_trading: This folder consists of the PPO and DQN based RL models.
-2. rl_trading: This folder consists of the Q learning and SARSA based RL models.
+1. context_aware_approach: This folder consists of models used in context_aware_approach. You will have to generate the embeddings for the LLM models apriori before using these models.
+2. price_only_sentiment_aware_approach: This folder consists of models in price only approach and sentiment-aware approach.
 
 ##### Data Source:
 1. Price data: https://www.kaggle.com/datasets/nishanthsalian/indian-stock-index-1minute-data-2008-2020
 2. News data: https://economictimes.indiatimes.com/archive.cms?from=mdr
 
 ##### Evaluation Metrics:
-1. Total Profit
-2. Return (%)
-3. Maximum Drawdown
-4. Volatility
-5. Sharpe Ratio
-6. Sortino Ratio
+1. Return (%)
+2. Maximum Drawdown
+3. Volatility
 
 ##### Prerequisite Libraries:
 1. stable-baselines3==1.7.0
