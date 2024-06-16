@@ -10,8 +10,7 @@ Continuous observation space is supported for DQN and PPO.
 2. price_only_sentiment_aware_approach: This folder consists of models in price only approach and sentiment-aware approach.
 
 ##### Data Source:
-1. Price data: https://www.kaggle.com/datasets/nishanthsalian/indian-stock-index-1minute-data-2008-2020
-2. News data: https://economictimes.indiatimes.com/archive.cms?from=mdr
+Dataset of Price Data approach, Sentiment-aware approach and Context-aware approach are available: https://drive.google.com/file/d/1ArcApDbBMo93CU6e_RnZD2K9bZXLkdbB/view?usp=sharing
 
 ##### Evaluation Metrics:
 1. Return (%)
