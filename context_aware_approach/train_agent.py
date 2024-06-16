@@ -17,22 +17,25 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--text_representation', type=str,
                         help='text representation scheme',
-                        choices=["bert", "finbert", "finbert_senti"])
-    parser.add_argument('--text_sentiment', type=str,
-                        help='use text sentiment along with representation scheme',
-                        choices=["True", "False"])
+                        choices=["gemma2b", "gemma7b", "llama2", "mistral", "llama3"])
     args = parser.parse_args()
 
     # Select config file based on text representation scheme
-    if args.text_representation == "bert":
-        config = json.load(open("configs/bert.json", "r"))
-        approach = "bert"
-    elif args.text_representation == "finbert":
-        config = json.load(open("configs/finbert.json", "r"))
-        approach = "finbert"
-    elif args.text_representation == "finbert_senti":
-        config = json.load(open("configs/finbert_senti.json", "r"))
-        approach = "finbert_senti"
+    if args.text_representation == "llama2":
+        config = json.load(open("configs/llama2.json", "r"))
+        approach = "llama2"
+    elif args.text_representation == "mistral":
+        config = json.load(open("configs/mistral.json", "r"))
+        approach = "mistral"
+    elif args.text_representation == "gemma2b":
+        config = json.load(open("configs/gemma2b.json", "r"))
+        approach = "gemma2b"
+    elif args.text_representation == "gemma7b":
+        config = json.load(open("configs/gemma7b.json", "r"))
+        approach = "gemma7b"
+    elif args.text_representation == "llama3":
+        config = json.load(open("configs/llama3.json", "r"))
+        approach = "llama3"
 
     # Read the train data
     train_df = pd.read_csv(config["path"] + "train_df_news.csv")
@@ -57,10 +60,10 @@ if __name__ == "__main__":
                         "num_news_articles": config["num_news_articles"],
                         "language_model": config["language_model"]
                     }
-
+    
     observation_dim = len(train_df.columns[7:-2])
     env_parameters["observation_dim"] = observation_dim
-
+    
     # Intialize the environment
     env = Env_CNN_News_Price(**env_parameters)
 

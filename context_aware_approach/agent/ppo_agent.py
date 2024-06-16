@@ -1,8 +1,9 @@
 from stable_baselines3.ppo import PPO
 import tqdm as tq
 import torch.nn as nn
-from network_layers.cnn_price_news_layer import CNN_Price_News_Layer
-from network_layers.cnn_price_news_senti_layer import CNN_Price_News_Senti_Layer
+from network_layers.cnn_price_news_layer_1 import CNN_Price_News_Layer
+from network_layers.cnn_price_news_layer_2 import CNN_Price_News_Layer_1
+from network_layers.cnn_price_news_layer_3 import CNN_Price_News_Layer_2
 
 """
     PPO agent to be used for trading
@@ -52,18 +53,22 @@ class PPO_Agent:
 
         # Define the configuration of the feature extraction module
         if self.policy == "MultiInputPolicy":
-            if approach == "bert":
+            if approach == "llama2" or approach == "llama3":
                 features_extractor_class = CNN_Price_News_Layer
-                net_arch = [16, 16]
+                net_arch = [64, 64]
+                feature_dim = 128
+            elif approach == "mistral":
+                features_extractor_class = CNN_Price_News_Layer
+                net_arch = [64, 64]
                 feature_dim = 16
-            elif approach == "finbert":
-                features_extractor_class = CNN_Price_News_Layer
-                net_arch = [64, 16]
-                feature_dim = 64
-            elif approach == "finbert_senti":
-                features_extractor_class = CNN_Price_News_Senti_Layer
-                net_arch = [64, 16]
-                feature_dim = 64
+            elif approach == "gemma2b":
+                features_extractor_class = CNN_Price_News_Layer_1
+                net_arch = [64, 64]
+                feature_dim = 128
+            elif approach == "gemma7b":
+                features_extractor_class = CNN_Price_News_Layer_2
+                net_arch = [64, 64]
+                feature_dim = 16
             
             self.policy_kwargs = dict(
                                         features_extractor_class=features_extractor_class,

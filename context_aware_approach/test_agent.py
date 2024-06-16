@@ -17,18 +17,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--text_representation', type=str,
                         help='text representation scheme',
-                        choices=["bert", "finbert"])
+                        choices=["llama2", "mistral"])
     args = parser.parse_args()
 
     # Select config file based on text representation scheme
-    if args.text_representation == "bert":
-        config = json.load(open("configs/bert.json", "r"))
-        approach = "bert"
+    if args.text_representation == "llama2":
+        config = json.load(open("configs/llama2.json", "r"))
+        approach = "llama2"
         save_model_path = "trained_models/"
         model_file_name = "{:}_{:}.zip".format(config["model_name"], config["language_model"])
-    elif args.text_representation == "finbert":
-        config = json.load(open("configs/finbert.json", "r"))
-        approach = "finbert"
+    elif args.text_representation == "mistral":
+        config = json.load(open("configs/mistral.json", "r"))
+        approach = "mistral"
         model_file_name = "{:}_{:}.zip".format(config["model_name"], config["language_model"])
 
     # Read the test data
@@ -63,9 +63,8 @@ if __name__ == "__main__":
                             "language_model": config["language_model"]
                         }
 
-        observation_dim = len(test_df_1.columns[7:-2])
-        
         # Intialize the environment
+        observation_dim = len(test_df_1.columns[7:-2])
         env = Env_CNN_News_Price(**env_parameters)
         
         model_parameters = {
@@ -84,7 +83,7 @@ if __name__ == "__main__":
         # Load the PPO agent
         rl_agent = PPO_Agent(config["model_name"], **model_parameters)
         rl_agent.load_model(save_model_path, model_file_name)
-        
+
         # Test the PPO agent
         print("--------------Year: {:}--------------".format(test_year))
         rl_agent.test_model(env)

@@ -34,20 +34,27 @@ class Env_CNN_News_Price(gym.Env):
         self.window_size = window_size
         self.episode = 0
 
-        if language_model == "bert":
-            self.tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-            self.bert_model = BertModel.from_pretrained('bert-base-uncased')
-        if language_model == "finbert":
-            self.tokenizer = BertTokenizerFast.from_pretrained('ProsusAI/finbert')
-            self.bert_model = BertModel.from_pretrained('ProsusAI/finbert')
-
-        self.bert_model.to(self.device)
+        if language_model == "llama2":
+            fp = open("llm_embeddings/llama2_title_embeddings.json")
+            self.title_embeddings_dict = json.load(fp)
+        if language_model == "mistral":
+            fp = open("llm_embeddings/mistral_title_embeddings.json")
+            self.title_embeddings_dict = json.load(fp)
+        if language_model == "llama3":
+            fp = open("llm_embeddings/llama3_title_embeddings.json")
+            self.title_embeddings_dict = json.load(fp)
+        if language_model == "gemma2b":
+            fp = open("llm_embeddings/gemma2b_title_embeddings.json")
+            self.title_embeddings_dict = json.load(fp)
+        if language_model == "gemma7b":
+            fp = open("llm_embeddings/gemma3b_title_embeddings.json")
+            self.title_embeddings_dict = json.load(fp)
 
         # Define action and observation space
         self.action_space = spaces.Box(low=-1, high=1, shape=(self.action_dim,))
         self.observation_space = spaces.Dict({
                                     "news_embeddings": spaces.Box(low=-np.inf, high=np.inf,
-                                                               shape=(self.num_news_articles, 768),
+                                                               shape=(self.num_news_articles, 4096),
                                                                dtype=np.float64
                                                             ),
                                     "market_value": spaces.Box(low=-np.inf, high=np.inf,
@@ -149,21 +156,13 @@ class Env_CNN_News_Price(gym.Env):
         reward = 0.85 * action * (current_price - prev_price) + 0.15 * (new_balance - self.balance)
         self.balance = new_balance
         return reward, action
-
-    def get_news_embeddings(self, titles):
+    
+    def llm_news_embeddings(self, titles):
         """
             Get news embedding of the news titles
         """
-        tokens = self.tokenizer(titles, truncation=True, max_length=40, padding='max_length')
-        input_ids = torch.LongTensor(tokens["input_ids"])
-        attention_mask = torch.FloatTensor(tokens["attention_mask"])
-        input_ids = input_ids.to(self.device)
-        attention_mask = attention_mask.to(self.device)
-        with torch.no_grad():
-            output = self.bert_model(input_ids, attention_mask)
-            last_hidden_state = output.last_hidden_state
-            news_embeddings = torch.sum(last_hidden_state, dim=1)
-        news_embeddings = news_embeddings.cpu().numpy()
+        news_embeddings = np.array([self.title_embeddings_dict[title.rstrip()] for title in titles])
+        news_embeddings = news_embeddings.squeeze(1)
         
         # Perform padding of the sequence if required
         if news_embeddings.shape[0] < self.num_news_articles:
@@ -176,7 +175,7 @@ class Env_CNN_News_Price(gym.Env):
         """
             Execute the action of the RL agent
         """
-
+        
         # Convert the continuous value to discrete value
         action = action * self.max_num_lots
         action = action.astype(int)
@@ -190,29 +189,28 @@ class Env_CNN_News_Price(gym.Env):
         date = self.nifty_df.iloc[self.idx + self.window_size]["Date"]
         time = self.nifty_df.iloc[self.idx + self.window_size]["Time"]
 
-        titles = self.news_df[self.idx + self.window_size]
-        
         # Add zero embeddings if no news articles are present
         # Or truncate the sequence if it exceeds the required sequence length
+        titles = self.news_df[self.idx + self.window_size]
         if len(titles) == 0:
-            news_embeddings = np.zeros((self.num_news_articles, 768))
+            news_embeddings = np.zeros((self.num_news_articles, 4096))
             self.embeddings = news_embeddings
         elif titles == self.news_df[self.idx + self.window_size - 1] and self.embeddings is not None:
             news_embeddings = self.embeddings
         else:
             titles = titles[-self.num_news_articles:]
-            news_embeddings = self.get_news_embeddings(titles)
+            news_embeddings = self.llm_news_embeddings(titles)
             self.embeddings = news_embeddings
 
         # Get the end of day indicator and end of contract indicator
         eod_indicator = self.nifty_df.iloc[self.idx + self.window_size]["EOD"]
         eoc_indicator = self.nifty_df.iloc[self.idx + self.window_size]["EOC"]
-        
+
         # Execute the action and get the reward
         reward, action = self.execute_action(action, current_price, prev_price, eod_indicator, eoc_indicator)
         market_values = np.array(self.nifty_df.iloc[self.idx:self.window_size + self.idx, 7:-3].values).astype("float64")
         action = np.array([action])
-        
+
         # Dictionary containing the next state
         next_state = {
                         "news_embeddings": news_embeddings,
@@ -250,11 +248,11 @@ class Env_CNN_News_Price(gym.Env):
         # Add zero embeddings if no news articles are present
         # Or truncate the sequence if it exceeds the required sequence length
         if len(titles) == 0:
-            news_embeddings = np.zeros((self.num_news_articles, 768))
+            news_embeddings = np.zeros((self.num_news_articles, 4096))
             self.embeddings = news_embeddings
         else:
             titles = titles[-self.num_news_articles:]
-            news_embeddings = self.get_news_embeddings(titles)
+            news_embeddings = self.llm_news_embeddings(titles)
             self.embeddings = news_embeddings
 
         # Prepare the next state

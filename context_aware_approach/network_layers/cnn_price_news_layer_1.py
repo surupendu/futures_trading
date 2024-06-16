@@ -10,11 +10,12 @@ import torch
 class CNN_Price_News_Layer(BaseFeaturesExtractor):
     def __init__(self, observation_space: spaces.Dict, feature_dim):
         super(CNN_Price_News_Layer, self).__init__(observation_space, feature_dim)
-        self.conv_1 = nn.Conv1d(in_channels=768, out_channels=200, kernel_size=3)
+
+        self.conv_1 = nn.Conv1d(in_channels=4096, out_channels=1000, kernel_size=3)
         self.conv_2 = nn.Conv1d(in_channels=14, out_channels=14, kernel_size=3)
 
-        self.linear_1 = nn.Linear(200, 100)
-        self.linear_2 = nn.Linear(100, 1)
+        self.linear_1 = nn.Linear(1000, 500)
+        self.linear_2 = nn.Linear(500, 1)
         self.sigmoid = nn.Sigmoid()
 
         self.linear_3 = nn.Linear(14, 14)
